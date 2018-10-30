@@ -1,22 +1,21 @@
-package com.danielstolero.climacell.ui.main;
+package com.danielstolero.climacell.ui.countries;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.danielstolero.climacell.MyApplication;
 import com.danielstolero.climacell.data.model.Country;
 
 import java.util.List;
 
-public class MainViewModel extends AndroidViewModel {
+public class CountriesViewModel extends AndroidViewModel {
 
     private final MediatorLiveData<List<Country>> mObservableCountries;
 
-    public MainViewModel(@NonNull Application application) {
+    public CountriesViewModel(@NonNull Application application) {
         super(application);
 
         mObservableCountries = new MediatorLiveData<>();
@@ -29,8 +28,21 @@ public class MainViewModel extends AndroidViewModel {
         mObservableCountries.addSource(countries, mObservableCountries::setValue);
     }
 
-    public void doApiCallForCountries() {
+    public void getCountries() {
         MyApplication application = getApplication();
-        application.getRepository().getCountiesByApi();
+        application.getAppExecutors().diskIO().execute(() -> {
+            List<Country> list = application.getDatabase().countryDao().loadAll();
+
+            // TODO - Need check last update.
+            if (list != null && list.size() > 0) {
+                mObservableCountries.postValue(list);
+            } else {
+                application.getRepository().getCountiesByApi();
+            }
+        });
+    }
+
+    public MediatorLiveData<List<Country>> getObservableCountries() {
+        return mObservableCountries;
     }
 }

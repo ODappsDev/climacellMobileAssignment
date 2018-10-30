@@ -50,10 +50,7 @@ public class ApiHelper {
                     String responseStr = response.body().string();
                     if (response.isSuccessful()) {
                         JsonArray jsonArray = parser.parse(responseStr).getAsJsonArray();
-
-                        Type listType = new TypeToken<List<Country>>(){}.getType();
-                        List<Country> arrayList = gson.fromJson(jsonArray, listType);
-                        repository.setCountries(arrayList);
+                        repository.setCountries(gson.fromJson(jsonArray, new TypeToken<List<Country>>(){}.getType()));
                     } else {
 
                     }

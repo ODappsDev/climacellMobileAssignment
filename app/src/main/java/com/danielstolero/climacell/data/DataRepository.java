@@ -61,6 +61,6 @@ public class DataRepository {
     }
 
     public void setCountries(List<Country> data) {
-        mObservableCountries.postValue(data);
+        mDatabase.countryDao().insertAll(data);
     }
 }

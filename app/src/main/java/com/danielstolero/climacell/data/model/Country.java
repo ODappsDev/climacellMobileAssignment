@@ -2,11 +2,12 @@ package com.danielstolero.climacell.data.model;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 @Entity(tableName = "countries")
-public class Country {
+public class Country implements Comparable<Country> {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
 
     private String name;
@@ -82,5 +83,10 @@ public class Country {
 
     public void setFlag(String flag) {
         this.flag = flag;
+    }
+
+    @Override
+    public int compareTo(@NonNull Country o) {
+        return 0;
     }
 }
