@@ -29,6 +29,7 @@ import android.support.annotation.VisibleForTesting;
 
 import com.danielstolero.climacell.AppExecutors;
 import com.danielstolero.climacell.data.local.db.converter.DateConverter;
+import com.danielstolero.climacell.data.local.db.converter.LocationConverter;
 import com.danielstolero.climacell.data.local.db.dao.CountryDao;
 import com.danielstolero.climacell.data.model.Country;
 
@@ -36,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Database(entities = {Country.class}, version = 1)
-@TypeConverters(DateConverter.class)
+@TypeConverters({DateConverter.class, LocationConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase sInstance;

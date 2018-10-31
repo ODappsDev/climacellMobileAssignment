@@ -4,6 +4,24 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity(tableName = "countries")
 public class Country implements Comparable<Country> {
 
@@ -14,16 +32,17 @@ public class Country implements Comparable<Country> {
     private String capital;
     private String region;
 
+    private Location location;
     private long population;
     private long area;
 
     private String flag;
 
-    public Country(int id, String name, String capital, String region, long population, long area, String flag) {
-        this.id = id;
+    public Country(String name, String capital, String region, Location location, long population, long area, String flag) {
         this.name = name;
         this.capital = capital;
         this.region = region;
+        this.location = location;
         this.population = population;
         this.area = area;
         this.flag = flag;
@@ -61,6 +80,14 @@ public class Country implements Comparable<Country> {
         this.region = region;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
     public long getPopulation() {
         return population;
     }
@@ -88,5 +115,33 @@ public class Country implements Comparable<Country> {
     @Override
     public int compareTo(@NonNull Country o) {
         return 0;
+    }
+
+    public static List<Country> fromJsonArray(String jsonArray) {
+        List<Country> countries = new ArrayList<>();
+        try {
+            JSONArray data = new JSONArray(jsonArray);
+            for (int i = 0; i < data.length(); i++) {
+                countries.add(fromJson(data.getJSONObject(i).toString()));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return countries;
+    }
+
+    private static Country fromJson(String jsonObject) throws JSONException {
+
+        JSONObject data = new JSONObject(jsonObject);
+        JSONArray location = data.getJSONArray("latlng");
+
+        return new Country(
+                data.getString("name"),
+                data.getString("capital"),
+                data.getString("region"),
+                new Location(location.optDouble(0), location.optDouble(1)),
+                data.optLong("population"),
+                data.optLong("area"),
+                data.getString("flag"));
     }
 }

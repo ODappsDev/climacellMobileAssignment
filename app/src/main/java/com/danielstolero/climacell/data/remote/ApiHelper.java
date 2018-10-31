@@ -7,10 +7,8 @@ import com.danielstolero.climacell.data.model.Country;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.List;
 
 import okhttp3.Call;
@@ -50,12 +48,13 @@ public class ApiHelper {
                     String responseStr = response.body().string();
                     if (response.isSuccessful()) {
                         JsonArray jsonArray = parser.parse(responseStr).getAsJsonArray();
-                        repository.setCountries(gson.fromJson(jsonArray, new TypeToken<List<Country>>(){}.getType()));
+                        List<Country> data = Country.fromJsonArray(jsonArray.toString());
+                        repository.setCountries(data);
                     } else {
 
                     }
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
             }
         }, false);
