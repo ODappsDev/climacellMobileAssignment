@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ClimaCell</string>
+    <string name="na">N/A</string>
+
 </resources>

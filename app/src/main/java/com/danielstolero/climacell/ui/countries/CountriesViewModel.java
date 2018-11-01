@@ -45,4 +45,19 @@ public class CountriesViewModel extends AndroidViewModel {
     public MediatorLiveData<List<Country>> getObservableCountries() {
         return mObservableCountries;
     }
+
+    public void loadForecast(Country country) {
+        // TODO
+        MyApplication application = getApplication();
+        application.getAppExecutors().diskIO().execute(() -> {
+            List<Country> list = application.getDatabase().countryDao().loadAll();
+
+            // TODO - Need check last update.
+            if (list != null && list.size() > 0) {
+                mObservableCountries.postValue(list);
+            } else {
+                application.getRepository().getCountiesByApi();
+            }
+        });
+    }
 }

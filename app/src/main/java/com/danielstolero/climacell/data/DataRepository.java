@@ -53,6 +53,10 @@ public class DataRepository {
         mApiHelper.getCountries(this);
     }
 
+    public void getForecastByApi() {
+        mApiHelper.getCountries(this);
+    }
+
     /**
      * Get the list of products from the database and get notified when the data changes.
      */

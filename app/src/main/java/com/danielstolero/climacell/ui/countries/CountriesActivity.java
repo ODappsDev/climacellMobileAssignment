@@ -1,6 +1,7 @@
 package com.danielstolero.climacell.ui.countries;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +10,7 @@ import android.support.v7.widget.SearchView;
 
 import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
+import com.danielstolero.climacell.data.model.Country;
 
 public class CountriesActivity extends BaseActivity implements SearchView.OnQueryTextListener {
 
@@ -64,7 +66,7 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
     }
 
     private void setupRecycleView() {
-        mAdapter = new CountriesAdapter(this);
+        mAdapter = new CountriesAdapter(this, mViewModel);
         mViewModel = ViewModelProviders.of(this).get(CountriesViewModel.class);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -89,4 +91,13 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
         }
         return false;
     }
+
+    void initForecast(Country country) {
+        mViewModel.loadForecast(country);
+    }
+
+    void showForecast() {
+    }
+
+
 }

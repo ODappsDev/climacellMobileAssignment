@@ -9,7 +9,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -59,4 +61,43 @@ public class ApiHelper {
             }
         }, false);
     }
+
+    public void getForecast(final DataRepository repository, final Country country) {
+
+        Map<String, String> params = new HashMap<>();
+        try {
+            params.put("location_id", String.valueOf(country.getId()));
+            params.put("lat", String.valueOf(country.getLocation().getLatitude()));
+            params.put("lon", String.valueOf(country.getLocation().getLongitude()));
+            params.put("num_days", String.valueOf(5));
+            params.put("unit_system", "si");
+            params.put("fields", "temp,precipitation");
+        } catch (Exception ignore) {
+
+        }
+
+        HttpConnection.getInstance().get("https://api2.climacell.co", "v2/weather/forecast/daily", params, new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                try {
+                    String responseStr = response.body().string();
+                    if (response.isSuccessful()) {
+                        JsonArray jsonArray = parser.parse(responseStr).getAsJsonArray();
+                        List<Country> data = Country.fromJsonArray(jsonArray.toString());
+                        repository.setCountries(data);
+                    } else {
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }, true);
+    }
+
 }
