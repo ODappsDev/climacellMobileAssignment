@@ -1,13 +1,13 @@
 package com.danielstolero.climacell.ui.countries;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 
+import com.danielstolero.climacell.MyApplication;
 import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
 import com.danielstolero.climacell.data.model.Country;
@@ -66,8 +66,8 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
     }
 
     private void setupRecycleView() {
-        mAdapter = new CountriesAdapter(this, mViewModel);
         mViewModel = ViewModelProviders.of(this).get(CountriesViewModel.class);
+        mAdapter = new CountriesAdapter(this, mViewModel);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         mRecyclerView.setHasFixedSize(true);
@@ -77,6 +77,10 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
     private void subscribeUi() {
         // Update the list when the data changes
         mViewModel.getObservableCountries().observe(this, data -> mAdapter.setList(data));
+        mViewModel.getObservableForecast().observe(this, data -> mAdapter.updateForecast(data));
+
+        //((MyApplication) getApplication()).getRepository().getObservableForecast().observe(this, data -> mAdapter.updateForecast(data));
+
     }
 
     @Override

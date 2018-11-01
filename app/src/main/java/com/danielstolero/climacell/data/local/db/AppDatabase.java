@@ -29,6 +29,7 @@ import android.support.annotation.VisibleForTesting;
 
 import com.danielstolero.climacell.AppExecutors;
 import com.danielstolero.climacell.data.local.db.converter.DateConverter;
+import com.danielstolero.climacell.data.local.db.converter.ForecastConverter;
 import com.danielstolero.climacell.data.local.db.converter.LocationConverter;
 import com.danielstolero.climacell.data.local.db.dao.CountryDao;
 import com.danielstolero.climacell.data.model.Country;

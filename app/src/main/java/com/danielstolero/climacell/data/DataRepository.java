@@ -3,9 +3,11 @@ package com.danielstolero.climacell.data;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.content.Context;
+import android.util.SparseArray;
 
 import com.danielstolero.climacell.data.local.db.AppDatabase;
 import com.danielstolero.climacell.data.model.Country;
+import com.danielstolero.climacell.data.model.Forecast;
 import com.danielstolero.climacell.data.remote.ApiHelper;
 
 import java.util.List;
@@ -22,6 +24,7 @@ public class DataRepository {
     private final ApiHelper mApiHelper;
 
     private MediatorLiveData<List<Country>> mObservableCountries;
+    private MediatorLiveData<SparseArray<List<Forecast>>> mObservableForecast;
 
     private DataRepository(final Context context, final AppDatabase database, ApiHelper api) {
         mContext = context;
@@ -29,13 +32,15 @@ public class DataRepository {
         mApiHelper = api;
 
         mObservableCountries = new MediatorLiveData<>();
-
         mObservableCountries.addSource(mDatabase.countryDao().loadAllCountries(),
                 countries -> {
                     if (mDatabase.getDatabaseCreated().getValue() != null) {
                         mObservableCountries.postValue(countries);
                     }
                 });
+
+        mObservableForecast = new MediatorLiveData<>();
+        mObservableForecast.setValue(new SparseArray<>());
     }
 
     public static DataRepository getInstance(final Context context, final AppDatabase database, ApiHelper api) {
@@ -53,8 +58,8 @@ public class DataRepository {
         mApiHelper.getCountries(this);
     }
 
-    public void getForecastByApi() {
-        mApiHelper.getCountries(this);
+    public void getForecastByApi(Country country) {
+        mApiHelper.getForecast(this, country);
     }
 
     /**
@@ -66,5 +71,17 @@ public class DataRepository {
 
     public void setCountries(List<Country> data) {
         mDatabase.countryDao().insertAll(data);
+    }
+
+    public LiveData<SparseArray<List<Forecast>>> getObservableForecast() {
+        return mObservableForecast;
+    }
+
+    public void setForecast(Country country, List<Forecast> data) {
+        SparseArray<List<Forecast>> forecasts = mObservableForecast.getValue();
+        if(forecasts != null) {
+            forecasts.put(country.getId(), data);
+        }
+        mObservableForecast.postValue(forecasts);
     }
 }

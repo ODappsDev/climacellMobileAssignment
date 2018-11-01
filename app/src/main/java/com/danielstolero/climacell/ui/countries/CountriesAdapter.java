@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,8 @@ import com.ahmadrosid.svgloader.SvgLoader;
 import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
 import com.danielstolero.climacell.data.model.Country;
+import com.danielstolero.climacell.data.model.Forecast;
+import com.danielstolero.climacell.data.model.Value;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
@@ -28,6 +31,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
 /**
@@ -41,8 +45,11 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     private CountriesViewModel mViewModel;
     private List<Country> mList;
     private List<Country> mListFiltered;
-
+    private SparseArray<List<Forecast>> forecast;
     private ExpandableLayout mExpandableLayout;
+
+    private ViewHolder mViewHolder;
+    private Country mCountry;
 
     public CountriesAdapter(Context context, CountriesViewModel viewModel) {
         mContext = context;
@@ -59,9 +66,7 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
         private View container, progressBar;
         private ExpandableLayout expandableLayout;
         private TextView day1, day2, day3, day4, day5;
-        private TextView minTemp1, minTemp2, minTemp3, minTemp4, minTemp5;
-        private TextView maxTemp1, maxTemp2, maxTemp3, maxTemp4, maxTemp5;
-        private TextView precipitation1, precipitation2, precipitation3, precipitation4, precipitation5;
+
 
         public ViewHolder(View view) {
             super(view);
@@ -73,34 +78,6 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
             expandableLayout = view.findViewById(R.id.expandable_layout);
 
             initDays(view);
-            initMinTemp(view);
-            initMaxTemp(view);
-            initMaxPrecipitation(view);
-
-        }
-
-        private void initMaxPrecipitation(View view) {
-            precipitation1 = view.findViewById(R.id.precipitation1);
-            precipitation2 = view.findViewById(R.id.precipitation2);
-            precipitation3 = view.findViewById(R.id.precipitation3);
-            precipitation4 = view.findViewById(R.id.precipitation4);
-            precipitation5 = view.findViewById(R.id.precipitation5);
-        }
-
-        private void initMaxTemp(View view) {
-            maxTemp1 = view.findViewById(R.id.maxTemp1);
-            maxTemp2 = view.findViewById(R.id.maxTemp2);
-            maxTemp3 = view.findViewById(R.id.maxTemp3);
-            maxTemp4 = view.findViewById(R.id.maxTemp4);
-            maxTemp5 = view.findViewById(R.id.maxTemp5);
-        }
-
-        private void initMinTemp(View view) {
-            minTemp1 = view.findViewById(R.id.minTemp1);
-            minTemp2 = view.findViewById(R.id.minTemp2);
-            minTemp3 = view.findViewById(R.id.minTemp3);
-            minTemp4 = view.findViewById(R.id.minTemp4);
-            minTemp5 = view.findViewById(R.id.minTemp5);
         }
 
         private void initDays(View view) {
@@ -125,19 +102,21 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     // Replace the contents of a mView (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        Country country = mListFiltered.get(position);
+        final Country country = mListFiltered.get(position);
         holder.txt.setText(String.format("%S, (%S)", country.getCapital(), country.getName()));
 
         SvgLoader.pluck()
-                .with((BaseActivity)mContext)
+                .with((BaseActivity) mContext)
                 .setPlaceHolder(R.mipmap.ic_launcher, R.mipmap.ic_launcher)
                 .load(country.getFlag(), holder.img);
 
         holder.container.setOnClickListener(v -> {
-            if(mListFiltered != null && holder.getAdapterPosition() < mListFiltered.size()&& holder.getAdapterPosition() > -1) {
+            if (mListFiltered != null && holder.getAdapterPosition() < mListFiltered.size() && holder.getAdapterPosition() > -1) {
                 updateExpandableLayout(holder);
                 setupForecast(country, holder);
-                ((CountriesActivity)mContext).initForecast(mListFiltered.get(holder.getAdapterPosition()));
+                ((CountriesActivity) mContext).initForecast(mListFiltered.get(holder.getAdapterPosition()));
+                mCountry = country;
+                mViewHolder = holder;
             }
         });
 
@@ -173,7 +152,7 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     }
 
     public void setList(@Nullable final List<Country> data) {
-        if(data != null) {
+        if (data != null) {
             if (mList == null) {
                 mList = data;
                 mListFiltered = data;
@@ -255,5 +234,33 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
         }
         mExpandableLayout = holder.expandableLayout;
         mExpandableLayout.toggle();
+    }
+
+    public void updateForecast(SparseArray<List<Forecast>> data) {
+        if (mViewHolder != null && mViewHolder.progressBar != null) {
+            mViewHolder.progressBar.setVisibility(View.GONE);
+
+            List<Forecast> forecasts = data.get(mCountry.getId());
+            if (forecasts != null) {
+                for (int i = 0; i < forecasts.size(); i++) {
+                    Forecast forecast = forecasts.get(i);
+
+                    // Min temp
+                    int minTempId = mContext.getResources().getIdentifier("minTemp" + (i + 1), "id", mContext.getPackageName());
+                    Value minTemp = Objects.requireNonNull(forecast.getTemp().get("min")).getValue();
+                    ((TextView) mViewHolder.itemView.findViewById(minTempId)).setText(String.format(Locale.US, "%.1f %s", minTemp.getValue(), minTemp.getUnits()));
+
+                    // Max temp
+                    int maxTempId = mContext.getResources().getIdentifier("maxTemp" + (i + 1), "id", mContext.getPackageName());
+                    Value maxTemp = Objects.requireNonNull(forecast.getTemp().get("max")).getValue();
+                    ((TextView) mViewHolder.itemView.findViewById(maxTempId)).setText(String.format(Locale.US, "%.1f %s", maxTemp.getValue(), maxTemp.getUnits()));
+
+                    // Max precipitation
+                    int precipitationId = mContext.getResources().getIdentifier("precipitation" + (i + 1), "id", mContext.getPackageName());
+                    Value precipitation = Objects.requireNonNull(forecast.getPrecipitation().get("max")).getValue();
+                    ((TextView) mViewHolder.itemView.findViewById(precipitationId)).setText(String.format(Locale.US, "%.1f\n%s", precipitation.getValue(), precipitation.getUnits()));
+                }
+            }
+        }
     }
 }

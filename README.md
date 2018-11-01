@@ -15,10 +15,10 @@
 To build this app you will have to use [Climacell](https://climacell.co) [Api](https://developer.climacell.co/docs)
 Explore the api to understand which service suits you best.
 
-Use https://restcountries.eu/rest/v2/all to get the needed data about all the capitals.
+Use https://restcountries.eu/rest/v2/all to get the needed value about all the capitals.
 
 #### Required solution:
-* Create a mobile app that uses [Climacell Api](https://developer.climacell.co/docs) to get the weather data needed for a weather app
+* Create a mobile app that uses [Climacell Api](https://developer.climacell.co/docs) to get the weather value needed for a weather app
 
 #### UI:
 * Home Screen - UITableView with search-bar containing the weather for all the capitals. Each cell should contain the following :

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.danielstolero.climacell.data.DataRepository;
 import com.danielstolero.climacell.data.model.Country;
+import com.danielstolero.climacell.data.model.Forecast;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
@@ -88,8 +89,9 @@ public class ApiHelper {
                     String responseStr = response.body().string();
                     if (response.isSuccessful()) {
                         JsonArray jsonArray = parser.parse(responseStr).getAsJsonArray();
-                        List<Country> data = Country.fromJsonArray(jsonArray.toString());
-                        repository.setCountries(data);
+
+                        List<Forecast> data = Forecast.fromJsonArray(country, jsonArray.toString());
+                        repository.setForecast(country, data);
                     } else {
 
                     }
