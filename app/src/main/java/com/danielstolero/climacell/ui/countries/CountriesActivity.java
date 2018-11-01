@@ -6,6 +6,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.view.View;
 
 import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
@@ -19,7 +20,7 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
     private CountriesAdapter mAdapter;
     private CountriesViewModel mViewModel;
 
-    private GoogleApiClient mGoogleApiClient;
+    private View progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +38,11 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
 
         mSearchView = findViewById(R.id.search);
         mRecyclerView = findViewById(R.id.recyclerView);
-
-
-
+        progressBar = findViewById(R.id.progressBar);
     }
 
     @Override
     protected void initListeners() {
-
         mSearchView.setOnQueryTextListener(this);
     }
 
@@ -56,10 +54,10 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
         subscribeUi();
 
         mViewModel.getCountries();
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     private void setupSearchView() {
-
         mSearchView.setActivated(true);
         mSearchView.setQueryHint("Type your keyword here");
         mSearchView.onActionViewExpanded();
@@ -78,7 +76,7 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
 
     private void subscribeUi() {
         // Update the list when the data changes
-        mViewModel.getObservableCountries().observe(this, data -> mAdapter.setList(data));
+        mViewModel.getObservableCountries().observe(this, data -> mAdapter.setList(data, progressBar));
         mViewModel.getObservableForecast().observe(this, data -> mAdapter.updateForecast(data));
 
         //((MyApplication) getApplication()).getRepository().getObservableForecast().observe(this, data -> mAdapter.updateForecast(data));

@@ -20,6 +20,7 @@ import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
 import com.danielstolero.climacell.data.model.Country;
 import com.danielstolero.climacell.data.model.Forecast;
+import com.danielstolero.climacell.data.model.Location;
 import com.danielstolero.climacell.data.model.Value;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -53,8 +54,6 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     private List<Country> mListFiltered;
     private SparseArray<List<Forecast>> forecast;
     private ExpandableLayout mExpandableLayout;
-
-    private GoogleMap mGoogleMap;
 
     private ViewHolder mViewHolder;
     private Country mCountry;
@@ -116,7 +115,6 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
         final Country country = mListFiltered.get(position);
         holder.txt.setText(String.format("%S, (%S)", country.getCapital(), country.getName()));
 
-
         SvgLoader.pluck()
                 .with((BaseActivity) mContext)
                 .setPlaceHolder(R.mipmap.ic_launcher, R.mipmap.ic_launcher)
@@ -129,13 +127,21 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
                 ((CountriesActivity) mContext).initForecast(mListFiltered.get(holder.getAdapterPosition()));
                 holder.map.onResume();
                 holder.map.getMapAsync(googleMap -> {
-                    mGoogleMap = googleMap;
 
-                    if (mGoogleMap != null) {
-                        mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                    if(googleMap != null) {
+                        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
-                        mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
-                        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                        googleMap.getUiSettings().setZoomControlsEnabled(false);
+                        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+                        Location location = country.getLocation();
+                        if(location != null) {
+                            LatLng newPos = new LatLng(location.getLatitude(), location.getLongitude());
+                            googleMap.clear();
+                            googleMap.addMarker(new MarkerOptions().position(newPos));
+
+                            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPos, 4));
+                        }
                     }
                 });
                 mCountry = country;
@@ -174,8 +180,9 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
         return mListFiltered != null ? mListFiltered.size() : 0;
     }
 
-    public void setList(@Nullable final List<Country> data) {
+    public void setList(@Nullable final List<Country> data, View view) {
         if (data != null) {
+            view.setVisibility(View.GONE);
             if (mList == null) {
                 mList = data;
                 mListFiltered = data;
@@ -284,22 +291,6 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
                     ((TextView) mViewHolder.itemView.findViewById(precipitationId)).setText(String.format(Locale.US, "%.1f\n%s", precipitation.getValue(), precipitation.getUnits()));
                 }
             }
-
-            updateMapPosition(mCountry.getLocation().getLatitude(), mCountry.getLocation().getLongitude());
         }
     }
-
-
-    private void updateMapPosition(double latitude, double longitude) {
-        if (mGoogleMap != null) {
-
-            LatLng newPos = new LatLng(latitude, longitude);
-            mGoogleMap.clear();
-            mGoogleMap.addMarker(new MarkerOptions().position(newPos));
-
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPos, 4));
-        }
-    }
-
-
 }
