@@ -49,4 +49,6 @@ dependencies {
     annotationProcessor "android.arch.persistence.room:compiler:1.1.1"
     implementation 'com.github.ar-android:AndroidSvgLoader:1.0.1'
     implementation 'net.cachapa.expandablelayout:expandablelayout:2.9.2'
+    implementation 'com.google.android.gms:play-services-maps:16.0.0'
+
 }

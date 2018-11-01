@@ -20,7 +20,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.forecast.ForecastActivity" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAZiCgaE8zxQ27P2t5pr4K_EMrnT5ZqsL8" />
     </application>
 
 </manifest>

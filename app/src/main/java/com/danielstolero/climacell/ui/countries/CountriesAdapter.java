@@ -21,6 +21,12 @@ import com.danielstolero.climacell.base.BaseActivity;
 import com.danielstolero.climacell.data.model.Country;
 import com.danielstolero.climacell.data.model.Forecast;
 import com.danielstolero.climacell.data.model.Value;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
 
@@ -48,6 +54,8 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     private SparseArray<List<Forecast>> forecast;
     private ExpandableLayout mExpandableLayout;
 
+    private GoogleMap mGoogleMap;
+
     private ViewHolder mViewHolder;
     private Country mCountry;
 
@@ -59,14 +67,14 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
     // Provide a reference to the views for each data item
     // Complex data items may need more than one mView per item, and
     // you provide access to all the views for a data item in a mView holder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         private TextView txt;
         private ImageView img;
         private View container, progressBar;
         private ExpandableLayout expandableLayout;
         private TextView day1, day2, day3, day4, day5;
-
+        private MapView map;
 
         public ViewHolder(View view) {
             super(view);
@@ -76,6 +84,8 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
             img = view.findViewById(R.id.imageView);
             progressBar = view.findViewById(R.id.progressBar);
             expandableLayout = view.findViewById(R.id.expandable_layout);
+            map = view.findViewById(R.id.map);
+            map.onCreate(null);
 
             initDays(view);
         }
@@ -87,6 +97,7 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
             day4 = view.findViewById(R.id.day4);
             day5 = view.findViewById(R.id.day5);
         }
+
     }
 
     // Create new views (invoked by the layout manager)
@@ -105,6 +116,7 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
         final Country country = mListFiltered.get(position);
         holder.txt.setText(String.format("%S, (%S)", country.getCapital(), country.getName()));
 
+
         SvgLoader.pluck()
                 .with((BaseActivity) mContext)
                 .setPlaceHolder(R.mipmap.ic_launcher, R.mipmap.ic_launcher)
@@ -115,6 +127,17 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
                 updateExpandableLayout(holder);
                 setupForecast(country, holder);
                 ((CountriesActivity) mContext).initForecast(mListFiltered.get(holder.getAdapterPosition()));
+                holder.map.onResume();
+                holder.map.getMapAsync(googleMap -> {
+                    mGoogleMap = googleMap;
+
+                    if (mGoogleMap != null) {
+                        mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+                        mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+                        mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                    }
+                });
                 mCountry = country;
                 mViewHolder = holder;
             }
@@ -261,6 +284,22 @@ public class CountriesAdapter extends RecyclerView.Adapter<CountriesAdapter.View
                     ((TextView) mViewHolder.itemView.findViewById(precipitationId)).setText(String.format(Locale.US, "%.1f\n%s", precipitation.getValue(), precipitation.getUnits()));
                 }
             }
+
+            updateMapPosition(mCountry.getLocation().getLatitude(), mCountry.getLocation().getLongitude());
         }
     }
+
+
+    private void updateMapPosition(double latitude, double longitude) {
+        if (mGoogleMap != null) {
+
+            LatLng newPos = new LatLng(latitude, longitude);
+            mGoogleMap.clear();
+            mGoogleMap.addMarker(new MarkerOptions().position(newPos));
+
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newPos, 4));
+        }
+    }
+
+
 }

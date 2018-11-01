@@ -7,10 +7,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 
-import com.danielstolero.climacell.MyApplication;
 import com.danielstolero.climacell.R;
 import com.danielstolero.climacell.base.BaseActivity;
 import com.danielstolero.climacell.data.model.Country;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 public class CountriesActivity extends BaseActivity implements SearchView.OnQueryTextListener {
 
@@ -18,6 +18,8 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
     private RecyclerView mRecyclerView;
     private CountriesAdapter mAdapter;
     private CountriesViewModel mViewModel;
+
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +104,4 @@ public class CountriesActivity extends BaseActivity implements SearchView.OnQuer
 
     void showForecast() {
     }
-
-
 }
